@@ -20,7 +20,7 @@ class Portal{
 	//Used HashMap for hospitals,citizens,slots because they have O(1) for search,insertion and slots operation.
 	//hospitals--> key=hospital id
 	//citizens--> key= unique_id
-	//slots--> key=vaccine name
+	//vaccines--> key=vaccine name
 
 	private ArrayList<String> vaccineName;
 	private HashMap<String,Vaccine> vaccines;
@@ -228,28 +228,101 @@ class Portal{
 
 			
 
+			Hospital h=hospitals.get(hospital_id);
+			Vaccine v= vaccines.get(vaccine);
 
-
-			Slot S= new Slot(hospital_id,day,quantity,vaccine);
+			Slot S= new Slot(h,day,quantity,v);
 			ArrayList <Slot> arr_slots;
 
-			Hospital H=hospitals.get(hospital_id);			
-			arr_slots= H.get_slots();
+					
+			arr_slots= h.get_slots();
 			arr_slots.add(S);
 
-			Vaccine V=vaccines.get(vaccine);
-			arr_slots=V.get_slots();
+			
+			arr_slots=v.get_slots();
 			arr_slots.add(S);
 			
 
-			System.out.printf("Slot Added for Day:%d, Availiable Quantity: %d of Vaccine %s\n",S.get_day(),S.get_quantity(),S.get_vaccine());
+			System.out.printf("Slot Added for Day:%d, Availiable Quantity: %d of Vaccine %s\n",S.get_day(),S.get_quantity(),vaccine);
 		}
 
 
 	}
 
 	public void BookSlot(){
+		Scanner sc= new Scanner(System.in);
 
+		System.out.printf("Enter patient Unique Id: ");
+		String id= sc.nextLine();
+
+		if(citizens.containsKey(id)==false){
+			System.out.println("You are not registered");
+			return;
+		}
+		
+		while(true){
+			System.out.println("1.Search by area");
+			System.out.println("2.Search by Vaccine");
+			System.out.println("3.Exit");
+
+			System.out.printf("Enter Option: ");
+			int input=sc.nextInt();
+			sc.nextLine();
+
+			switch(input){
+				case 1:
+
+
+				case 2:
+					System.out.print("Enter Vaccine Name: ");
+					String vaccine=sc.nextLine();
+
+					Vaccine V=vaccines.get(vaccine);
+					ArrayList<Slot> slots=V.get_slots();
+					int size=slots.size();
+
+					if(size==0){
+						System.out.println("No slots");
+						return;
+					}
+					for(Slot i: slots){
+						Hospital h=i.get_hospital();
+						System.out.println(h.get_hospital_id()+" "+h.get_name());
+					}
+
+					System.out.print("Enter Hospital ID: ");
+					long h_id= sc.nextLong();
+					if(hospitals.containsKey(h_id)==false){
+						System.out.println("Hospital not registered");
+						return;
+					}
+					Hospital h= hospitals.get(h_id);
+					for(Slot i: slots){
+						Vaccine v=i.get_vaccine();
+						String name= v.get_name();
+
+						if(name==vaccine){
+							if(i.get_total_registered()==i.get_quantity()){
+								System.out.println("No Vaccine Dose left");
+								return;
+							}
+
+							i.increase_total_registered();
+							Citizen c=citizens.get(id);
+
+							c.addSlot(i);
+							return;
+
+						}
+					}
+
+				case 3:
+					return;
+
+				default:
+					System.out.println("Enter Correct Value between 1 and 3");
+			}
+		}
 	}
 
 	public void ListSlot(){
@@ -289,6 +362,8 @@ class Citizen{
 	private long age;
 	private String unique_id;
 	private String status;
+	private Slot slot;
+
 
 	Citizen(String name,long age,String unique_id){
 		this.name=name;
@@ -307,6 +382,10 @@ class Citizen{
 
 	public long get_age(){
 		return this.age;
+	}
+
+	public void addSlot(Slot s){
+		this.slot=s;
 	}
 
 
@@ -385,13 +464,13 @@ class Hospital{
 
 class Slot{
 	private long day;
-	private long hospital_id;
+	private Hospital hospital;
 	private long quantity;
-	private String vaccine;
+	private Vaccine vaccine;
 	private long total_registered=0;
 
-	Slot(long hospital_id,long day,long quantity,String vaccine){
-		this.hospital_id=hospital_id;
+	Slot(Hospital hospital,long day,long quantity,Vaccine vaccine){
+		this.hospital=hospital;
 		this.quantity=quantity;
 		this.vaccine=vaccine;
 		this.day=day;
@@ -401,16 +480,25 @@ class Slot{
 		return day;
 	}
 
-	public long get_hospital_id(){
-		return hospital_id;
+	public Hospital get_hospital(){
+		return hospital;
 	}
 
 	public long get_quantity(){
 		return quantity;
 	}
 
-	public String get_vaccine(){
+	public Vaccine get_vaccine(){
 		return vaccine;
+
+	}
+
+	public long get_total_registered(){
+		return total_registered;
+	}
+
+	public void increase_total_registered(){
+		this.total_registered++;
 
 	}
 
