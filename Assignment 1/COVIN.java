@@ -5,10 +5,10 @@ public class COVIN{
 
 		Portal CoWin = new Portal();	
 
-		while (true){
-			CoWin.menu();
-			CoWin.input();
-		}
+
+	
+
+		
 
 
 		
@@ -17,8 +17,29 @@ public class COVIN{
 
 class Portal{
 
+	//Used HashMap for hospitals,citizens,slots because they have O(1) for search,insertion and slots operation.
+	//hospitals--> key=hospital id
+	//citizens--> key= unique_id
+	//slots--> key=vaccine name
+
+	private ArrayList<String> vaccineName;
+	private HashMap<String,Vaccine> vaccines;
+	private HashMap<Long,Hospital> hospitals; 
+	private HashMap<String,Citizen> citizens;
+	// private HashMap<Long,Slot> slots;
+
 	Portal(){
 		System.out.println("CoWin Portal Initialized....");
+		vaccineName=new ArrayList();
+		vaccines= new HashMap<>();
+		hospitals=new HashMap<>();
+		citizens=new HashMap<>();
+		// slots=new HashMap<>();
+
+		while (true){
+			this.menu();
+			this.input();
+		}
 	}
 
 	public void menu(){
@@ -91,7 +112,9 @@ class Portal{
 		}
 
 		Vaccine v1= new Vaccine(name,doses,gap);
-		System.out.printf("Vaccine Name: %s, Number of Doses: %d, Gap Between Doses: %d\n",v1.getname(),v1.getdoses(),v1.getgap());
+		vaccines.put(name,v1);
+		vaccineName.add(name);
+		System.out.printf("Vaccine Name: %s, Number of Doses: %d, Gap Between Doses: %d\n",v1.get_name(),v1.get_doses(),v1.get_gap());
 			
 
 		return;
@@ -109,7 +132,9 @@ class Portal{
 		if(pincode>99999 && pincode<1000000){
 
 			Hospital H1= new Hospital(name,pincode);
-			System.out.printf("Hospital Name: %s, PinCode: %d, Unique ID: %d\n",H1.get_name(),H1.get_pincode(),H1.get_uniquecode());
+			System.out.printf("Hospital Name: %s, PinCode: %d, Unique ID: %d\n",H1.get_name(),H1.get_pincode(),H1.get_hospital_id());
+			hospitals.put(H1.get_hospital_id(),H1);
+
 		}
 
 		else{
@@ -150,6 +175,7 @@ class Portal{
 
 		}
 		Citizen C1= new Citizen(name,age,unique_id);
+		citizens.put(unique_id,C1);
 
 		System.out.printf("Citizen Name: %s, Age: %d, Unique Id: %s\n",C1.get_name(),C1.get_age(),C1.get_unique_id());
 
@@ -159,6 +185,66 @@ class Portal{
 	}
 
 	public void AddSlot(){
+		Scanner sc= new Scanner(System.in);
+		System.out.printf("Enter Hospital ID: ");
+		long hospital_id =sc.nextLong();
+		sc.nextLine();
+
+		if(hospital_id<100000 || hospital_id>=1000000){
+			System.out.printf("Invalid ID. Hospital ID is a 6 digit number.");
+			return;
+		}
+
+		else if(hospitals.containsKey(hospital_id)==false){
+			System.out.println("Hospital not registered.");
+			return;
+		}		
+
+		System.out.printf("Enter number of slots to be added: ");
+		long slots=sc.nextLong();
+		for(long i=0;i<slots;i++){
+			System.out.printf("Enter Day Number: ");
+			long day=sc.nextLong();
+			sc.nextLine();
+			System.out.printf("Enter Quantity: ");
+			long quantity=sc.nextLong();
+			sc.nextLine();
+			String vaccine;			
+
+			while(true){
+				System.out.println("Select Vaccine");
+
+				for(int y=0;y<vaccineName.size();y++){
+					System.out.printf("%d. %s\n",y,vaccineName.get(y));
+				}
+
+				int input= sc.nextInt();
+				if(input<vaccineName.size()){
+					vaccine=vaccineName.get(input);
+					break;
+				}
+				System.out.println("Incorrect Vaccine number");				
+			}
+
+			
+
+
+
+			Slot S= new Slot(hospital_id,day,quantity,vaccine);
+			ArrayList <Slot> arr_slots;
+
+			Hospital H=hospitals.get(hospital_id);			
+			arr_slots= H.get_slots();
+			arr_slots.add(S);
+
+			Vaccine V=vaccines.get(vaccine);
+			arr_slots=V.get_slots();
+			arr_slots.add(S);
+			
+
+			System.out.printf("Slot Added for Day:%d, Availiable Quantity: %d of Vaccine %s\n",S.get_day(),S.get_quantity(),S.get_vaccine());
+		}
+
 
 	}
 
@@ -167,6 +253,22 @@ class Portal{
 	}
 
 	public void ListSlot(){
+		Scanner sc= new Scanner(System.in);
+		System.out.println("Enter Hospital Id: ");
+		long id= sc.nextLong();
+		if(hospitals.containsKey(id)==false){
+			System.out.println("Hospital not registered");
+			return;
+		}
+
+		Hospital H=hospitals.get(id);
+		ArrayList<Slot> slots=H.get_slots();
+		for(int i=0;i<slots.size();i++){
+			Slot S= slots.get(i);
+			System.out.printf("Day: %d, Availiable Quantity: %d of Vaccine %s\n",S.get_day(),S.get_quantity(),S.get_vaccine());
+
+		}
+
 
 	}
 
@@ -217,23 +319,29 @@ class Vaccine{
 	private String name;
 	private long doses;
 	private long gap;
+	private ArrayList<Slot> slots;
 
 	Vaccine(String name, long doses, long gap){
 		this.name=name;
 		this.doses=doses;
 		this.gap=gap;
+		this.slots=new ArrayList();
 		
 	}
 
-	public long getgap(){
+	public long get_gap(){
 		return this.gap;
 	}
-	public long getdoses(){
+	public long get_doses(){
 		return this.doses;
 	}
 
-	public String getname(){
+	public String get_name(){
 		return this.name;
+	}
+
+	public ArrayList get_slots(){
+		return this.slots;
 	}
 
 
@@ -245,12 +353,14 @@ class Hospital{
 	private static long code=100000;
 	private String name;
 	private long pincode;
-	private long uniquecode;
+	private long hospital_id;
+	private ArrayList<Slot> slots;
 
 	Hospital(String name,long pincode){
 		this.name=name;
 		this.pincode=pincode;
-		this.uniquecode=1+code;
+		this.hospital_id=1+code;
+		this.slots= new ArrayList();
 		code++;
 	}
 
@@ -262,14 +372,50 @@ class Hospital{
 		return this.pincode;
 	}
 
-	public long get_uniquecode(){
-		return this.uniquecode;
+	public long get_hospital_id(){
+		return this.hospital_id;
+	}
+
+	public ArrayList get_slots(){
+		return this.slots;
 	}
 
 
 }
 
 class Slot{
+	private long day;
+	private long hospital_id;
+	private long quantity;
+	private String vaccine;
+	private long total_registered=0;
+
+	Slot(long hospital_id,long day,long quantity,String vaccine){
+		this.hospital_id=hospital_id;
+		this.quantity=quantity;
+		this.vaccine=vaccine;
+		this.day=day;
+	}
+
+	public long get_day(){
+		return day;
+	}
+
+	public long get_hospital_id(){
+		return hospital_id;
+	}
+
+	public long get_quantity(){
+		return quantity;
+	}
+
+	public String get_vaccine(){
+		return vaccine;
+
+	}
+
+
+
 
 }
 
