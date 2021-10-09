@@ -4,13 +4,6 @@ public class COVIN{
 	public static void main(String[] args) {
 
 		Portal CoWin = new Portal();	
-
-
-	
-
-		
-
-
 		
 	}
 }
@@ -18,22 +11,22 @@ public class COVIN{
 class Portal{
 
 	//Used HashMap for hospitals,citizens,slots because they have O(1) for search,insertion and slots operation.
-	//hospitals--> key=hospital id
-	//citizens--> key= unique_id
-	//vaccines--> key=vaccine name
+	//hospitalMap--> key=hospital id
+	//citizenMap--> key= unique_id
+	//vaccineMap--> key=vaccine name
 
 	private ArrayList<String> vaccineName;
-	private HashMap<String,Vaccine> vaccines;
-	private HashMap<Long,Hospital> hospitals; 
-	private HashMap<String,Citizen> citizens;
-	// private HashMap<Long,Slot> slots;
+	private HashMap<String,Vaccine> vaccineMap;
+	private HashMap<Long,Hospital> hospitalMap; 
+	private HashMap<String,Citizen> citizenMap;
+
 
 	Portal(){
 		System.out.println("CoWin Portal Initialized....");
 		vaccineName=new ArrayList();
-		vaccines= new HashMap<>();
-		hospitals=new HashMap<>();
-		citizens=new HashMap<>();
+		vaccineMap= new HashMap<>();
+		hospitalMap=new HashMap<>();
+		citizenMap=new HashMap<>();
 		// slots=new HashMap<>();
 
 		while (true){
@@ -112,7 +105,7 @@ class Portal{
 		}
 
 		Vaccine v1= new Vaccine(name,doses,gap);
-		vaccines.put(name,v1);
+		vaccineMap.put(name,v1);
 		vaccineName.add(name);
 		System.out.printf("Vaccine Name: %s, Number of Doses: %d, Gap Between Doses: %d\n",v1.get_name(),v1.get_doses(),v1.get_gap());
 			
@@ -133,7 +126,7 @@ class Portal{
 
 			Hospital H1= new Hospital(name,pincode);
 			System.out.printf("Hospital Name: %s, PinCode: %d, Unique ID: %d\n",H1.get_name(),H1.get_pincode(),H1.get_hospital_id());
-			hospitals.put(H1.get_hospital_id(),H1);
+			hospitalMap.put(H1.get_hospital_id(),H1);
 
 		}
 
@@ -175,7 +168,7 @@ class Portal{
 
 		}
 		Citizen C1= new Citizen(name,age,unique_id);
-		citizens.put(unique_id,C1);
+		citizenMap.put(unique_id,C1);
 
 		System.out.printf("Citizen Name: %s, Age: %d, Unique Id: %s\n",C1.get_name(),C1.get_age(),C1.get_unique_id());
 
@@ -195,7 +188,7 @@ class Portal{
 			return;
 		}
 
-		else if(hospitals.containsKey(hospital_id)==false){
+		else if(hospitalMap.containsKey(hospital_id)==false){
 			System.out.println("Hospital not registered.");
 			return;
 		}		
@@ -211,39 +204,37 @@ class Portal{
 			sc.nextLine();
 			String vaccine;			
 
-			while(true){
-				System.out.println("Select Vaccine");
+			System.out.println("Select Vaccine");
 
-				for(int y=0;y<vaccineName.size();y++){
-					System.out.printf("%d. %s\n",y,vaccineName.get(y));
-				}
-
-				int input= sc.nextInt();
-				if(input<vaccineName.size()){
-					vaccine=vaccineName.get(input);
-					break;
-				}
-				System.out.println("Incorrect Vaccine number");				
+			for(int y=0;y<vaccineName.size();y++){
+				System.out.printf("%d. %s\n",y,vaccineName.get(y));
 			}
 
+			int input= sc.nextInt();
+			if(input<vaccineName.size()){
+				vaccine=vaccineName.get(input);
+				
+			}
+			else{
+				System.out.println("Incorrect Vaccine number");	
+				return;
+			}
+						
 			
 
-			Hospital h=hospitals.get(hospital_id);
-			Vaccine v= vaccines.get(vaccine);
+			
+
+			Hospital h=hospitalMap.get(hospital_id);
+			Vaccine v= vaccineMap.get(vaccine);
 
 			Slot S= new Slot(h,day,quantity,v);
-			ArrayList <Slot> arr_slots;
-
-					
-			arr_slots= h.get_slots();
-			arr_slots.add(S);
-
-			
-			arr_slots=v.get_slots();
-			arr_slots.add(S);
 			
 
-			System.out.printf("Slot Added for Day:%d, Availiable Quantity: %d of Vaccine %s\n",S.get_day(),S.get_quantity(),vaccine);
+			h.addSlot(S);
+
+			v.addHospital(h);		
+
+			System.out.printf("Slot Added by Hospital %d for Day:%d, Availiable Quantity: %d of Vaccine %s\n",hospital_id,S.get_day(),S.get_quantity(),vaccine);
 		}
 
 
@@ -252,93 +243,183 @@ class Portal{
 	public void BookSlot(){
 		Scanner sc= new Scanner(System.in);
 
-		System.out.printf("Enter patient Unique Id: ");
+		System.out.printf("Enter Citizen Unique Id: ");
 		String id= sc.nextLine();
 
-		if(citizens.containsKey(id)==false){
+		if(citizenMap.containsKey(id)==false){
 			System.out.println("You are not registered");
 			return;
 		}
-		
+
+		Citizen C = citizenMap.get(id);
+
+		String status=C.get_status();
+		if(status.equals("VACCINATED")){
+			System.out.println("You are fully Vaccinated");
+			return;
+		}		
 		while(true){
+
 			System.out.println("1.Search by area");
 			System.out.println("2.Search by Vaccine");
 			System.out.println("3.Exit");
-
 			System.out.printf("Enter Option: ");
 			int input=sc.nextInt();
 			sc.nextLine();
 
-			switch(input){
-				case 1:
+			if(input==3){
+				return;
+			}
 
+			else if(input!=1 && input!=2){
+				System.out.println("Enter Correct Value between 1 and 3");
+				continue;
+			}
 
-				case 2:
-					System.out.print("Enter Vaccine Name: ");
-					String vaccine=sc.nextLine();
+			Vaccine V;
+			String vaccine="";
+			
 
-					Vaccine V=vaccines.get(vaccine);
-					ArrayList<Slot> slots=V.get_slots();
-					int size=slots.size();
+			if(input==1){
+				System.out.print("Enter PinCode: ");
+				long pincode=sc.nextLong();
+				sc.nextLine();
+				int check1=0;
 
-					if(size==0){
-						System.out.println("No slots");
-						return;
+				for(Map.Entry ele: hospitalMap.entrySet()){
+					long ho_id=(long)ele.getKey();
+					Hospital h =hospitalMap.get(ho_id);
+					if(h.get_pincode()==pincode){
+						System.out.printf("%s %s\n",ho_id,h.get_name());
+						check1=1;
 					}
-					for(Slot i: slots){
-						Hospital h=i.get_hospital();
-						System.out.println(h.get_hospital_id()+" "+h.get_name());
-					}
-
-					System.out.print("Enter Hospital ID: ");
-					long h_id= sc.nextLong();
-					if(hospitals.containsKey(h_id)==false){
-						System.out.println("Hospital not registered");
-						return;
-					}
-					Hospital h= hospitals.get(h_id);
-					for(Slot i: slots){
-						Vaccine v=i.get_vaccine();
-						String name= v.get_name();
-
-						if(name==vaccine){
-							if(i.get_total_registered()==i.get_quantity()){
-								System.out.println("No Vaccine Dose left");
-								return;
-							}
-
-							i.increase_total_registered();
-							Citizen c=citizens.get(id);
-
-							c.addSlot(i);
-							return;
-
-						}
-					}
-
-				case 3:
+				}
+				if(check1==0){
+					System.out.println("No slots");
 					return;
+				}
 
-				default:
-					System.out.println("Enter Correct Value between 1 and 3");
+
+			}
+
+			else if(input==2){
+				System.out.print("Enter Vaccine Name: ");
+				vaccine=sc.nextLine();
+
+				V=vaccineMap.get(vaccine);
+				HashSet<Hospital> hospitals=V.get_hospitalMap();
+				
+				int size=hospitals.size();
+
+				if(size==0){
+					System.out.println("No Slots");
+					return;
+				}
+
+
+				for(Hospital i: hospitals){
+					System.out.println(i.get_hospital_id()+" "+i.get_name());
+				}			
+
+
+			}
+
+			System.out.print("Enter Hospital ID: ");
+			long h_id= sc.nextLong();
+			if(hospitalMap.containsKey(h_id)==false){
+				System.out.println("Hospital not registered");
+				return;
+			}
+
+			long gap=0;
+
+			if(C.get_vaccine()!=null){
+				Vaccine taken= C.get_vaccine();
+				gap=taken.get_gap();
+			}
+			
+			Hospital h= hospitalMap.get(h_id);
+			ArrayList<Slot> slots=h.get_slots();
+
+			int check=0;
+
+			for(int j=0;j<slots.size();j++){
+				Slot i=slots.get(j);
+				Vaccine v=i.get_vaccine();
+				String name= v.get_name();
+				if(input==2){
+					if(name.equals(vaccine) && i.get_day()>gap && i.get_quantity()!=0){						
+						check=1;	
+						System.out.printf("%d->Day: %d Availiable Qty:%d Vaccine:%s\n",j,i.get_day(),i.get_quantity(),name);										
+					}
+
+				}
+
+				else{
+					if( i.get_day()>gap && i.get_quantity()!=0){						
+						check=1;	
+						System.out.printf("%d->Day: %d Availiable Qty:%d Vaccine:%s\n",j,i.get_day(),i.get_quantity(),name);										
+					}
+
+				}
+
+				
+			}
+
+			if(check==0){
+				System.out.println("No Slots Availiable");
+				return;
+			}
+
+			else{
+				System.out.print("Choose Slot: ");
+				int index=sc.nextInt();
+				
+				if(index<0 || index>=slots.size() ){
+					System.out.println("Wrong Slot");
+					return;
+				}
+				Slot chosen =slots.get(index);
+				V=chosen.get_vaccine();
+				C.addVaccine(V);				
+				C.addSlot(chosen);
+				chosen.decrease_quantity();
+
+				if(C.get_doses_given()==V.get_doses()){
+					C.changeStatus("VACCINATED");										
+				}	
+
+				else if(C.get_status().equals("REGISTERED")){
+					C.changeStatus("PARTIALLY VACCINATED");
+				}
+			
+				
+
+				System.out.printf("%s vaccinated with %s\n",C.get_name(),C.get_vaccinename());
+				
+				return;
+
+
+
 			}
 		}
 	}
 
 	public void ListSlot(){
 		Scanner sc= new Scanner(System.in);
-		System.out.println("Enter Hospital Id: ");
+		System.out.printf("Enter Hospital Id: ");
 		long id= sc.nextLong();
-		if(hospitals.containsKey(id)==false){
+		sc.nextLine();
+		if(hospitalMap.containsKey(id)==false){
 			System.out.println("Hospital not registered");
 			return;
 		}
 
-		Hospital H=hospitals.get(id);
+		Hospital H=hospitalMap.get(id);
 		ArrayList<Slot> slots=H.get_slots();
 		for(int i=0;i<slots.size();i++){
 			Slot S= slots.get(i);
-			System.out.printf("Day: %d, Availiable Quantity: %d of Vaccine %s\n",S.get_day(),S.get_quantity(),S.get_vaccine());
+			System.out.printf("Day: %d, Availiable Quantity: %d of Vaccine %s\n",S.get_day(),S.get_quantity(),S.get_vaccinename());
 
 		}
 
@@ -346,6 +427,29 @@ class Portal{
 	}
 
 	public void CheckStatus(){
+		Scanner sc= new Scanner(System.in);
+		System.out.print("Enter Patient ID: ");
+		String id=sc.nextLine();
+		if(citizenMap.containsKey(id)==false){
+			System.out.println("Citizen not registered");
+			return;
+		}
+
+		Citizen C=citizenMap.get(id);
+		System.out.println(C.get_status());
+		String status=C.get_status();
+		if(status.equals("REGISTERED")==false){
+			System.out.println("Vaccine given:"+C.get_vaccinename());
+			System.out.println("No of Doses given:"+C.get_doses_given());
+			if(status.equals("VACCINATED")==false){
+				System.out.println("Due Date: "+C.get_duedate());				
+
+			}
+			
+
+		}
+		
+		return;
 
 	}
 
@@ -363,6 +467,9 @@ class Citizen{
 	private String unique_id;
 	private String status;
 	private Slot slot;
+	private Vaccine vaccine;
+	private long doses_given=0;
+	private long duedate=0;
 
 
 	Citizen(String name,long age,String unique_id){
@@ -386,6 +493,51 @@ class Citizen{
 
 	public void addSlot(Slot s){
 		this.slot=s;
+		this.increase_doses_given();
+
+		Vaccine v=s.get_vaccine();
+		if(v.get_doses()==this.doses_given){
+			this.duedate=-1;
+		}
+		else{
+			this.duedate=v.get_gap()+s.get_day();
+		}
+
+		
+
+	}
+
+	public String get_status(){
+		return this.status;
+	}
+
+	public void changeStatus(String status){
+		this.status=status;
+	}
+
+	public Vaccine get_vaccine(){
+		return this.vaccine;
+	}
+
+	public long get_doses_given(){
+		return this.doses_given;
+	}
+
+	public void increase_doses_given(){
+		this.doses_given++;
+	}
+
+	public long get_duedate(){
+		return this.duedate;
+
+	}
+
+	public String get_vaccinename(){
+		return this.vaccine.get_name();
+	}
+
+	public void addVaccine(Vaccine v){
+		this.vaccine=v;
 	}
 
 
@@ -398,13 +550,13 @@ class Vaccine{
 	private String name;
 	private long doses;
 	private long gap;
-	private ArrayList<Slot> slots;
+	private HashSet<Hospital> hospitalMap;
 
 	Vaccine(String name, long doses, long gap){
 		this.name=name;
 		this.doses=doses;
 		this.gap=gap;
-		this.slots=new ArrayList();
+		this.hospitalMap=new HashSet<Hospital>();
 		
 	}
 
@@ -419,8 +571,13 @@ class Vaccine{
 		return this.name;
 	}
 
-	public ArrayList get_slots(){
-		return this.slots;
+	public HashSet get_hospitalMap(){
+		return this.hospitalMap;
+	}
+
+	public void addHospital(Hospital H){
+
+		this.hospitalMap.add(H);
 	}
 
 
@@ -459,15 +616,19 @@ class Hospital{
 		return this.slots;
 	}
 
+	public void addSlot(Slot S){
+		this.slots.add(S);
+	}
+
 
 }
 
 class Slot{
 	private long day;
 	private Hospital hospital;
-	private long quantity;
+	private long quantity;  //Availiable Quantity
 	private Vaccine vaccine;
-	private long total_registered=0;
+	
 
 	Slot(Hospital hospital,long day,long quantity,Vaccine vaccine){
 		this.hospital=hospital;
@@ -491,19 +652,15 @@ class Slot{
 	public Vaccine get_vaccine(){
 		return vaccine;
 
+	}	
+
+	public String get_vaccinename(){
+		return this.vaccine.get_name();
 	}
 
-	public long get_total_registered(){
-		return total_registered;
+	public void decrease_quantity(){
+		this.quantity--;
 	}
-
-	public void increase_total_registered(){
-		this.total_registered++;
-
-	}
-
-
-
 
 }
 
