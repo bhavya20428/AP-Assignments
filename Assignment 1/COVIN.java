@@ -27,7 +27,7 @@ class Portal{
 		vaccineMap= new HashMap<>();
 		hospitalMap=new HashMap<>();
 		citizenMap=new HashMap<>();
-		// slots=new HashMap<>();
+		
 
 		while (true){
 			this.menu();
