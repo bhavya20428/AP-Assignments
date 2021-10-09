@@ -551,6 +551,7 @@ class Vaccine{
 	private long doses;
 	private long gap;
 	private HashSet<Hospital> hospitalMap;
+	//HashSet is used beacuse it finds an element in O(1) time and removes duplicate entires.
 
 	Vaccine(String name, long doses, long gap){
 		this.name=name;
