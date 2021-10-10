@@ -104,6 +104,11 @@ class Portal{
 
 		}
 
+		if(vaccineMap.containsKey(name)){
+			System.out.println("Vaccine already added");
+			return;
+		}
+
 		Vaccine v1= new Vaccine(name,doses,gap);
 		vaccineMap.put(name,v1);
 		vaccineName.add(name);
@@ -126,6 +131,7 @@ class Portal{
 
 			Hospital H1= new Hospital(name,pincode);
 			System.out.printf("Hospital Name: %s, PinCode: %d, Unique ID: %d\n",H1.get_name(),H1.get_pincode(),H1.get_hospital_id());
+
 			hospitalMap.put(H1.get_hospital_id(),H1);
 
 		}
@@ -168,6 +174,10 @@ class Portal{
 
 		}
 		Citizen C1= new Citizen(name,age,unique_id);
+		if(citizenMap.containsKey(unique_id)){
+			System.out.println("Citizen already Registered with this unique id");
+			return;
+		}
 		citizenMap.put(unique_id,C1);
 
 		System.out.printf("Citizen Name: %s, Age: %d, Unique Id: %s\n",C1.get_name(),C1.get_age(),C1.get_unique_id());
