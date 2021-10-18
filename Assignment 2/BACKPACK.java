@@ -9,24 +9,175 @@ class Course{
 
 	private ArrayList<Assessment> assessments;
 	private ArrayList<ClassMaterial> classmaterial;
+	private ArrayList<Instructor> instructors;
+	private ArrayList<Student> students;
+	private ArrayList<Comment> comments;
+
+	public ArrayList<Assessment> getAssessments(){
+		return this.assessments;
+	}
+	public ArrayList<ClassMaterial> getClassmaterial(){
+		return this.classmaterial;
+	}
+	public ArrayList<Instructor> getInstructors(){
+		return this.instructors;
+	}
+	public ArrayList<Student> getStudents(){
+		return this.students;
+	}
+	public ArrayList<Comment> getComments(){
+		return this.comments;
+	}
 
 	Course(){
 		assessments=new ArrayList<>();
 		classmaterial= new ArrayList<>();
+		instructors= new ArrayList<>();
+		students= new ArrayList<>();
+
+		Student s1= new Student(this);
+		this.addStudent(s1);
+		Student s2=new Student(this);
+		this.addStudent(s2);
+
+		Instructor i1= new Instructor(this);
+		this.addInstructor(i1);
+	
+
+
 	}
+
+	public void addStudent(Student s){
+		students.add(s);
+	}
+
+	public void addInstructor(Instructor i){
+		instructors.add(i);
+	}
+
+	public void menu(){
+		System.out.println("Welcome to Backpack");
+		System.out.println("1. Enter as Instructor");
+		System.out.println("2. Enter as Student");
+		System.out.println("3. Exit");
+
+	}
+
+	public void input(){
+		Scanner sc= new Scanner(System.in);
+		int input= sc.nextInt();
+		sc.nextLine();
+
+		switch(input){
+			case 1:
+				Instructor i=chooseInstructor();
+				i.start();
+				break;
+			case 2:
+				Student s=chooseStudent();
+				s.start();
+				break;
+			case 3:
+				System.exit(0);
+			default:
+				System.out.println("Please Enter Correct Input");
+		}
+	}
+
+	public void chooseInstructor(){
+		for(int i=0;i<instructors.size();i++){
+			System.out.println(i+"-"+instructors[i].getId());
+		}
+		Scanner sc= new Scanner(System.in);
+		int k=sc.nextInt();
+
+		return instructors[k];
+	}
+
+
+	public void chooseStudent(){
+		for(int i=0;i<students.size();i++){
+			System.out.println(i+"-"+students[i].getId());
+		}
+		Scanner sc= new Scanner(System.in);
+		int k=sc.nextInt();
+
+		return students[k];
+	}
+
+
+
+
+
+}
+
+class comment{
+	private Date upload;
+	private String text;
+	private String id;
+
+	comment(){
+		upload=java.util.Calendar.getInstance().getTime(); 
+
+	}
+
+	public void print(){
+		System.out.println(c+"-"+id);
+		System.out.println(upload);
+	}
+
+	public void add(String c,String id){
+		text=c;
+		this.id=id;
+		return;
+	}	
 
 }
 
 interface common{
+
 	public void viewMaterial();
 	public void viewAssessment();
 	public void viewComments();
 	public void addComments();
 	public void menu();
-	public void logout();
+	
 }
 
 class Instructor implements common{
+
+	private static long baseid=0;
+
+	private Course course;
+	private String id;
+	private ArrayList<Assessment> assessments;
+	private ArrayList<ClassMaterial> classmaterial;
+	private ArrayList<Student> students;
+	private ArrayList<Comment> comments;
+
+
+	Instructor(Course C){
+		course=C;
+		assessments=C.getAssessments();
+		classmaterial=C.getClassmaterial();
+		students=C.getStudents();
+		comments=C.getComments();
+
+	}
+
+	public void start(){
+		while(true){
+			this.menu();
+			int k=this.choose();
+			if(k==-1){
+				break;
+			}
+		}
+	}
+
+	public String getId(){
+	 	return id;
+	}
 
 	public void menu(){
 		
@@ -43,7 +194,7 @@ class Instructor implements common{
 
 	}
 
-	public void choose(){
+	public int choose(){
 		Scanner sc= new Scanner(System.in);
 		int input=sc.nextInt();
 		sc.nextLine();
@@ -74,53 +225,128 @@ class Instructor implements common{
 				addComments();
 				break;
 			case 9:
-				logout();
+				return -1;
 				break;
+				
 			default:
 				System.out.println("Wrong Input");
 		}
+
+		return 0;
 	}
 
 	public void addMaterial(){
-
+		Scanner sc= new Scanner(System.in);
+		System.out.println("1. Add Lecture Slide");
+		System.out.println("2. Add Lecture Video");
+		int k=sc.nextInt();
+		sc.nextLine();
+		if(k==1){
+			ClassMaterial a = new Slides();		
+		}
+		else if(k==2){
+			ClassMaterial a = new Videos();
+		}
+		classmaterial.add(a);
+		a.materialAdd();
 	}
 
 	public void addAssessments(){
-
+		Scanner sc= new Scanner(System.in);
+		System.out.println("1. Add Assignment");
+		System.out.println("2. Add Quiz");
+		int k=sc.nextInt();
+		sc.nextLine();
+		if(k==1){
+			Assessment a = new Assignment();		
+		}
+		else if(k==2){
+			Assessment a = new Quiz();
+		}
+		assessments.add(a);
+		a.assessmentAdd();
 	}
 
 	public void viewMaterial(){
-
+		for(ClassMaterial i: classmaterial){
+			i.materialView();
+		}
 	}
 
 	public void viewAssessment(){
-
+		for(int i=0;i<assessments.size();i++){
+			System.out.print("ID : "+i);
+			assessments[i].assessmentView();
+		}
 	}
+
 	public void gradeAssessment(){
+
 
 	}
 
 	public void closeAssessment(){
 
+
 	}
 
 	public void viewComments(){
+		for(Comment i: comments){
+			i.print();
+		}
 
 	}
 
 	public void addComments(){
+		Scanner sc= new Scanner(System.in);
+		Comment c = new Comment();
+		text=sc.nextLine();
+
+		c.add(text,this.id);
+		comments.add(c);
+
 
 	}
 
-	public void logout(){
-
-	}
+	
 
 
 
 }
 
 class Student implements common{
+	private static long baseid=0;
+	private Course course;
+	private String id;
+
+	private ArrayList<Assessment> assessments;
+	private ArrayList<ClassMaterial> classmaterial;
+	private ArrayList<Instructor> instructors;
+	private ArrayList<Comment> comments;
+
+	Student(Course C){
+		course=C;
+		assessments=C.getAssessments();
+		classmaterial=C.getClassmaterial();
+		instructors=C.getInstructors();
+		comments=C.getComments();
+	}
+
+
+	public void start(){
+		while(true){
+			this.menu();
+			int k=this.choose();
+			if(k==-1){
+				break;
+			}
+		}
+	}
+
+	public String getId(){
+	 	return id;
+	}
+
 
 	public void menu(){
 		 
@@ -134,7 +360,7 @@ class Student implements common{
 
 	}
 
-	public void choose(){
+	public int choose(){
 		Scanner sc= new Scanner(System.in);
 		int input=sc.nextInt();
 		sc.nextLine();
@@ -159,19 +385,27 @@ class Student implements common{
 				addComments();
 				break;
 			case 7:
-				logout();
+				return -1;
 				break;
 			default:
 				System.out.println("Wrong input");
 		}
+
+		return 0;
 	}
 
 	public void viewMaterial(){
+		for(ClassMaterial i: classmaterial){
+			i.materialView();
+		}
 
 	}
 
 	public void viewAssessment(){
-
+		for(int i=0;i<assessments.size();i++){
+			System.out.print("ID : "+i);
+			assessments[i].assessmentView();
+		}
 	}
 
 	public void submitAssessment(){
@@ -183,16 +417,24 @@ class Student implements common{
 	}
 
 	public void viewComments(){
+		for(Comment i: comments){
+			i.print();
+		}
 
 	}
 
 	public void addComments(){
+		Scanner sc= new Scanner(System.in);
+		Comment c = new Comment();
+		text=sc.nextLine();
+
+		c.add(text,this.id);
+		comments.add(c);
+
 
 	}
 
-	public void logout(){
-
-	}
+	
 }
 
 interface ClassMaterial{
