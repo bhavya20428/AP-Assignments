@@ -154,10 +154,10 @@ class Instructor implements common{
 
 	private Course course;
 	private String id;
-	private ArrayList<Assessment> assessments;
 	private ArrayList<ClassMaterial> classmaterial;
 	private ArrayList<Student> students;
 	private ArrayList<Comment> comments;
+	private ArrayList<Assessment> assessments;
 
 
 	Instructor(Course C){
@@ -264,13 +264,28 @@ class Instructor implements common{
 		int k=sc.nextInt();
 		sc.nextLine();
 		if(k==1){
-			Assessment a = new Assignment();		
-		}
+			Assessment a = new Assignment();
+			System.out.print("Enter Problem Statement: ");
+			question= sc.nextLine();
+			System.out.print("Enter Max Marks: ");
+			maxMarks=sc.nextLong();
+			sc.nextLine();	
+			a.assessmentAdd(question,maxMarks);	
+			}
 		else{
 			Assessment a = new Quiz();
+			System.out.print("Enter Quiz Question: ");
+			question=sc.nextLine();
+			a.assessmentAdd(question,1);
+
 		}
 		assessments.add(a);
-		a.assessmentAdd();
+		
+
+		for(Student i: students){
+			i.addSubmission(a);
+		}
+		
 	}
 
 	public void viewMaterial(){
@@ -283,26 +298,44 @@ class Instructor implements common{
 		for(int i=0;i<assessments.size();i++){
 			System.out.print("ID : "+i);
 			assessments[i].assessmentView();
-		}
+			System.out.println("----------------");
+		}		
 	}
 
 	public void gradeAssessment(){
-		System.out.println("List of Assignments");
+		System.out.println("List of Assessments");
+		this.viewAssessment();
 
-		for(int i=0;i<assessments.size();i++){
-			System.out.println("ID: "+i+assessments[i].viewAssessment);
-		}
-
-		System.out.print("Enter ID of assessment to view submissions: ");
+		System.out.print("Enter ID of assessment to view submission: ");
 		Scanner sc= new Scanner(System.in);
 		int k=sc.nextInt();
 		sc.nextLine();
-		Assessment chosen=assessments[k];
-		System.out.println("Choose ID from these ungraded submissions");
-		for(int i=0;i<chosen.getSubmissions().size();i++){
-
-
+		System.out.println("Choose ID from these Ungraded Assessments");
+		int a=0;
+		for(int i=0;i<students.size();i++){
+			if(students[i].getAssessmentStatus(k)=="UNGRADED"){
+				System.out.println(i+". "+students[i].getId());
+				a++;
+			}
 		}
+		if(a!=0){
+			int input=sc.nextInt();
+			sc.nextLine();
+			Student s= students[input];
+			ArrayList<Assessment> submission=s.getSubmissions();
+			System.out.println("Submission: ");
+			System.out.println("Submission: "+submission[k].getAnswer());
+			System.out.println("-------------------------------");
+			System.out.println("Max Marks: "+assessments[k].getMaxMarks());
+
+			submission[k].setMarks(this);
+		}
+
+		else{
+			System.out.println("No Ungraded Assessment");
+		}
+		
+		
 	}
 
 	public void closeAssessment(){
@@ -319,6 +352,10 @@ class Instructor implements common{
 		int input=sc.nextInt();
 		sc.nextLine();
 		assessments[input].close();
+		for(int i=0;i<students.size();i++){
+			ArrayList<Assessment> sub=student[i].getSubmissions();
+			sub[input].close();
+		}
 	}
 
 	public void viewComments(){
@@ -335,14 +372,7 @@ class Instructor implements common{
 
 		c.add(text,this.id);
 		comments.add(c);
-
-
 	}
-
-	
-
-
-
 }
 
 class Student implements common{
@@ -350,14 +380,14 @@ class Student implements common{
 	private Course course;
 	private String id;
 
-	private ArrayList<Assessment> assessments;
+	private ArrayList<Assessment> submissions;
 	private ArrayList<ClassMaterial> classmaterial;
 	private ArrayList<Instructor> instructors;
 	private ArrayList<Comment> comments;
 
 	Student(Course C){
 		course=C;
-		assessments=C.getAssessments();
+		submissions=new ArrayList<>();
 		classmaterial=C.getClassmaterial();
 		instructors=C.getInstructors();
 		comments=C.getComments();
@@ -434,19 +464,80 @@ class Student implements common{
 
 	}
 
+	public void addSubmission(Assessment a){
+		submissions.add(a,this);
+	}
+
 	public void viewAssessment(){
-		for(int i=0;i<assessments.size();i++){
+		for(int i=0;i<submissions.size();i++){
 			System.out.print("ID : "+i);
-			assessments[i].assessmentView();
+			submissions[i].assessmentView();
 		}
 	}
 
+	public ArrayList<Assessment> getSubmissions(){
+		return this.submissions;
+
+	}
+
+	
+
 	public void submitAssessment(){
 		System.out.println("Pending Assignments");
+		int a=0;
+		for(int i=0;i<submissions.size();i++){
+			if(submissions[i].getStatus().equals("OPEN") && submissions[i].getmarksStatus.equals("Not Submited")){
+				System.out.print("ID: "+i);
+				submissions[i].assessmentView();
+				a++;
+			}
+			
+
+		}
+		if(a!=0){
+			Scanner sc= new Scanner(System.in);
+			System.out.print("Enter ID of Assessment: ");
+			int k=sc.nextInt();
+			submissions[i].submit();
+
+		}
+		else{
+			System.out.println("No Pending Assignments");
+		}
+
+		
+
+	}
+
+	public String AssessmentStatus(int id){
+		return submissions[id].getmarksStatus();
 
 	}
 
 	public void viewGrades(){
+		System.out.println("Graded Submissions");
+		for(int i=0;i<submissions.size();i++){
+			Assessment a= submissions[id];
+			if(a.getmarksStatus().equals("GRADED")){
+				System.out.println("Submission: "+a.getAnswer());
+				System.out.println("Marks Scored: "+a.getMarks());
+				System.out.println("Graded by: "+a.getInstructorId());
+				System.out.println("----------------------------");
+
+			}
+		}
+
+		System.out.println("Ungraded Submisssions");
+		for(int i=0;i<submissions.size();i++){
+			Assessment a= submissions[id];
+			if(a.getmarksStatus().equals("UNGRADED")){
+				System.out.println("Submission: "+a.getAnswer());
+				System.out.println("----------------------------");
+
+			}
+		}
+
+
 
 	}
 
@@ -461,13 +552,9 @@ class Student implements common{
 		Scanner sc= new Scanner(System.in);
 		Comment c = new Comment();
 		text=sc.nextLine();
-
 		c.add(text,this.id);
 		comments.add(c);
-
-
 	}
-
 	
 }
 
@@ -516,11 +603,6 @@ class Slides implements ClassMaterial{
 		course=c;
 
 	}
-
-
-
-
-
 }
 
 class Videos implements ClassMaterial{
@@ -553,56 +635,99 @@ class Videos implements ClassMaterial{
 }
 
 interface Assessment{
-	public void assessmentAdd();
+	public void assessmentAdd(String question,long maxMarks,Student S);
 	public void assessmentView();
+	public long getMaxMarks();
 	public String getStatus();
+	public String getAnswer();
+	public String getmarksStatus();
 	public void grade();
 	public void close();
 	public void submit();
 	
+	public long getMarks();
+	public String getInstructorId();
+	public void setMarks(String id);
+	
 }
 
 
-class Quiz implements Assessment{
+class Quiz implements Assessment{ 
 	private static final long maxMarks=1;
 	private String question;
 	private String status="OPEN";
-	private String marksStatus="Not submited";
-	private String answer;
+	private String marksStatus="Not Submited";
+	private String answer="Not Answered Yet!";
 	private long marks;
-	private Instructor I;
+	private String instructorId;
 	private Student S;
-	
 
-	
-	
-
-	public void assessmentAdd(){
-		Scanner sc= new Scanner(System.in);
-		System.out.print("Enter Quiz Question: ");
-		question=sc.nextLine();
-
-
+	@Override	
+	public void assessmentAdd(String question,long maxMarks,Student S){
+		this.S=S;
+		this.question=question;
+		this.maxMarks=maxMarks;
+		
+		return;
 	}
 
+	@Override
 	public void assessmentView(){
 		System.out.println("Question: "+question);
 		return;
 	}
 
+	@Override
+	public String getAnswer(){
+		return this.answer;
+	}
+
+	@Override
 	public void close(){
 		this.status="CLOSE";
 	}
 
+	@Override
 	public String getStatus(){
 		return this.status;
 	}
 
+	@Override
+	public String getMarksStatus(){
+		return this.marksStatus;
+	}
+
+	@Override
+	public long getMaxMarks(){
+		return this.getMaxMarks();
+	}
+
+	@Override
+	public long getMarks(){
+		return this.marks;
+	}
+
+	@Override
+	public String getInstructorId(){
+		return this.instuctorId;
+	}
+
+	@Override
 	public void submit(){
 		Scanner sc= new Scanner(System.in);
 		System.out.print(question+" ");
 		answer= sc.nextLine();
 		this.marksStatus="UNGRADED";
+	}
+
+	@Override
+	public void setMarks(String id){
+		Scanner sc=new Scanner(System.in);
+		System.out.println("Marks Scored: ");
+		marks=sc.nextLong();
+		this.instuctorId=id;
+		this.marksStatus="GRADED";
+
 	}
 
 
@@ -616,33 +741,49 @@ class Assignment implements Assessment{
 	private String question;
 	private String answer;
 	private long marks;
-	private String marksStatus="Not submited";
-	private Instructor I;
+	private String marksStatus="Not Submited";
+	private String instructorId;
 	private String status="OPEN";	
 	private Student S;
 
 	
 	
-
-	public void assessmentAdd(){
-		Scanner sc= new Scanner(System.in);
-		System.out.print("Enter Problem Statement: ");
-		question= sc.nextLine();
-		System.out.print("Enter Max Marks: ");
-		maxMarks=sc.nextLong();
-		sc.nextLine();
+	@Override	
+	public void assessmentAdd(String question,long maxMarks,Student S){
+		this.S=S;
+		this.question=question;
+		this.maxMarks=maxMarks;
+		
 		return;
 	}
 
+	@Override
 	public void assessmentView(){
 		System.out.println("Assignment: "+question+" Max Marks: "+maxMarks);
 		return;
 	}
 
+	@Override
 	public void close(){
 		status="CLOSE";
 	}
 
+	@Override
+	public String getMarksStatus(){
+		return this.marksStatus;
+	}
+
+	@Override
+	public long getMaxMarks(){
+		return this.getMaxMarks();
+	}
+
+	@Override
+	public String getAnswer(){
+		return this.answer;
+	}
+
+	@Override
 	public void submit(){
 		Scanner sc= new Scanner(System.in);
 		System.out.print("Enter filename of assignement: ");
@@ -655,10 +796,25 @@ class Assignment implements Assessment{
 		this.marksStatus="UNGRADED";
 	}
 
-	
+	@Override
+	public void setMarks(String id){
+		Scanner sc=new Scanner(System.in);
+		System.out.println("Marks Scored: ");
+		marks=sc.nextLong();
+		this.instuctorId=i;
+		this.marksStatus="GRADED";
 
+	}
 
+	@Override
+	public long getMarks(){
+		return this.marks;
+	}
 
+	@Override
+	public String getInstructorId(){
+		return this.instuctorId;
+	}
 
 }
 
