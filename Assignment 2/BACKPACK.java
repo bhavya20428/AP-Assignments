@@ -39,9 +39,13 @@ class Course{
 		this.addStudent(s1);
 		Student s2=new Student(this);
 		this.addStudent(s2);
+		Student s3=new Student(this);
+		this.addStudent(s3);
 
 		Instructor i1= new Instructor(this);
 		this.addInstructor(i1);
+		Instructor i2= new Instructor(this);
+		this.addInstructor(i2);
 	
 
 
@@ -162,6 +166,8 @@ class Instructor implements common{
 		classmaterial=C.getClassmaterial();
 		students=C.getStudents();
 		comments=C.getComments();
+		id="I"+String.valueof(baseid);
+		baseid++;
 
 	}
 
@@ -260,7 +266,7 @@ class Instructor implements common{
 		if(k==1){
 			Assessment a = new Assignment();		
 		}
-		else if(k==2){
+		else{
 			Assessment a = new Quiz();
 		}
 		assessments.add(a);
@@ -281,13 +287,38 @@ class Instructor implements common{
 	}
 
 	public void gradeAssessment(){
+		System.out.println("List of Assignments");
+
+		for(int i=0;i<assessments.size();i++){
+			System.out.println("ID: "+i+assessments[i].viewAssessment);
+		}
+
+		System.out.print("Enter ID of assessment to view submissions: ");
+		Scanner sc= new Scanner(System.in);
+		int k=sc.nextInt();
+		sc.nextLine();
+		Assessment chosen=assessments[k];
+		System.out.println("Choose ID from these ungraded submissions");
+		for(int i=0;i<chosen.getSubmissions().size();i++){
 
 
+		}
 	}
 
 	public void closeAssessment(){
+		System.out.println("List of Open Assessments");
+		for(int i=0;i<assessments.size();i++){
+			if(assessments[i]=="OPEN"){
+				System.out.println("ID: "+i+assessments[i].assessmentView());
+			}
 
+		}
 
+		Scanner sc= new Scanner(System.in);
+		System.out.print("Enter ID of assignment to close: ");
+		int input=sc.nextInt();
+		sc.nextLine();
+		assessments[input].close();
 	}
 
 	public void viewComments(){
@@ -330,6 +361,8 @@ class Student implements common{
 		classmaterial=C.getClassmaterial();
 		instructors=C.getInstructors();
 		comments=C.getComments();
+		id="S"+String.valueof(baseid);
+		baseid++;
 	}
 
 
@@ -409,6 +442,7 @@ class Student implements common{
 	}
 
 	public void submitAssessment(){
+		System.out.println("Pending Assignments");
 
 	}
 
@@ -512,27 +546,20 @@ class Videos implements ClassMaterial{
 		System.out.println("Enter filename of video: ");
 		videoFile=sc.nextLine();
 		upload=java.util.Calendar.getInstance().getTime();  
-
-
 		instructorId=id;
 		course=c;
-
-
 	}
-
-
-
 
 }
 
 interface Assessment{
 	public void assessmentAdd();
 	public void assessmentView();
+	public String getStatus();
 	public void grade();
 	public void close();
 	public void submit();
-	public void viewGrade();
-
+	
 }
 
 
@@ -540,13 +567,22 @@ class Quiz implements Assessment{
 	private static final long maxMarks=1;
 	private String question;
 	private String status="OPEN";
-	private HashMap<String,AnswerQuiz> submissions;
+	private String marksStatus="Not submited";
+	private String answer;
+	private long marks;
+	private Instructor I;
+	private Student S;
+	
+
+	
 	
 
 	public void assessmentAdd(){
 		Scanner sc= new Scanner(System.in);
 		System.out.print("Enter Quiz Question: ");
 		question=sc.nextLine();
+
+
 	}
 
 	public void assessmentView(){
@@ -555,24 +591,21 @@ class Quiz implements Assessment{
 	}
 
 	public void close(){
-		status="CLOSE";
+		this.status="CLOSE";
 	}
 
-
-
-
-}
-
-class AnswerQuiz{
-	private String instructorId;
-	private String answer;
-	private long marks=-1;
+	public String getStatus(){
+		return this.status;
+	}
 
 	public void submit(){
 		Scanner sc= new Scanner(System.in);
 		System.out.print(question+" ");
 		answer= sc.nextLine();
+		this.marksStatus="UNGRADED";
 	}
+
+
 
 
 
@@ -581,8 +614,14 @@ class AnswerQuiz{
 class Assignment implements Assessment{
 	private long maxMarks;
 	private String question;
-	private String status="OPEN";
-	private HashMap<String,AnswerAssignment> submissions;
+	private String answer;
+	private long marks;
+	private String marksStatus="Not submited";
+	private Instructor I;
+	private String status="OPEN";	
+	private Student S;
+
+	
 	
 
 	public void assessmentAdd(){
@@ -604,18 +643,6 @@ class Assignment implements Assessment{
 		status="CLOSE";
 	}
 
-	
-
-
-
-
-}
-
-class AnswerAssignment{
-	private String instructorId;
-	private String answer;
-	private long marks=-1;
-
 	public void submit(){
 		Scanner sc= new Scanner(System.in);
 		System.out.print("Enter filename of assignement: ");
@@ -625,7 +652,14 @@ class AnswerAssignment{
 			return;
 		}
 		answer.equals(ans);
+		this.marksStatus="UNGRADED";
 	}
 
+	
+
+
+
+
 }
+
 
