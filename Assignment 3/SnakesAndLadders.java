@@ -25,6 +25,7 @@ class Game{
 	private KingCobra f11;
 	private Floor f12;
 	private Floor f13;
+
 	private Dice d;
 
 	private Player p;
@@ -45,10 +46,7 @@ class Game{
 		f11=new KingCobra(11,3,-4);
 		f12=new Floor(12,1);
 		f13=new Floor(13,1);
-
 		
-
-
 		d= new Dice();
 	}
 
