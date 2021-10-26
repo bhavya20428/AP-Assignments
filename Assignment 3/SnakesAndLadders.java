@@ -3,8 +3,6 @@ public class SnakesAndLadders{
 	public static void main(String[] args) {
 		Game play= new Game();
 		play.startGame();
-
-		
 	}
 
 }
@@ -25,6 +23,7 @@ class Game{
 	private KingCobra f11;
 	private Floor f12;
 	private Floor f13;
+
 
 	private Dice d;
 
@@ -91,71 +90,79 @@ class Game{
 	}
 
 	public void movePlayer(int v){
-		p.movePosition(v);
 		Floor f;
+		
 
 		switch(v){
 			case 0:
-				p.addPoints(f1.givePoints());
-				p.printInfo(f1);
+				p.changefloor(f0);
+				p.printInfo();
 				break;
 
 			case 1:
-				p.addPoints(f1.givePoints());
-				p.printInfo(f1);
+				p.changefloor(f0);
+				p.printInfo();
 				break;			
 			case 2:
-				p.addPoints(f2.givePoints());
-				f =f2;
-				p.printInfo(f);
+				f=f2;
+				p.changefloor(f);
+				
+				p.printInfo();
 				movePlayer(f2.getNextPosition());
 				break;
 			case 3:
-				p.addPoints(f3.givePoints());
-				p.printInfo(f3);
+
+				p.changefloor(f3);
+				p.printInfo();
 				break;
 			case 4:
-				p.addPoints(f4.givePoints());
-				p.printInfo(f4);
+				p.changefloor(f4);
+				p.printInfo();
 				break;
 			case 5:
-				p.addPoints(f5.givePoints());
-				f =f5;
-				p.printInfo(f);
+				f=f5;
+				p.changefloor(f);
+				
+				p.printInfo();
 				movePlayer(f5.getNextPosition());
 				break;
 			case 6:
-				p.addPoints(f6.givePoints());
-				p.printInfo(f6);
+				p.changefloor(f6);
+				p.printInfo();
 				break;
 			case 7:
-				p.addPoints(f7.givePoints());
-				p.printInfo(f7);
+				p.changefloor(f7);
+				p.printInfo();
 				break;
 			case 8:
-				p.addPoints(f8.givePoints());
-				f =f8;
-				p.printInfo(f);
+				f=f8;
+				p.changefloor(f);
+				p.printInfo();
 				movePlayer(f8.getNextPosition());
 				break;
 			case 9:
-				p.addPoints(f9.givePoints());
-				p.printInfo(f9);
+				p.changefloor(f9);
+				p.printInfo();
 				break;
 			case 10:
-				p.addPoints(f10.givePoints());
-				p.printInfo(f10);
+				p.changefloor(f10);
+				p.printInfo();
 				break;
 			case 11:
-				p.addPoints(f11.givePoints());
-				f =f11;
-				p.printInfo(f);
+				f=f11;
+				p.changefloor(f);
+				p.printInfo();
 				movePlayer(f11.getNextPosition());
 				break;
 			case 12:
-				p.addPoints(f12.givePoints());
-				p.printInfo(f12);
+				p.changefloor(f12);
+				p.printInfo();
 				break;
+			case 13:
+				p.changefloor(f13);
+				p.printInfo();
+				break;
+
 		}
 
 
@@ -184,25 +191,22 @@ class Game{
 
 class Player{
 	private int points=0;
-	private int position=0;
+	private int position;
 	private String name;
+	private Floor f;
+
 
 
 	Player(String name){
 		this.name=name;
 	}
-	public void movePosition(int k){
-		this.position=k;
-	}
+	
 
 	public int getTotalPoints(){
 		return this.points;
 	}
 
-	public void addPoints(int p){
-		this.points+=p;
-
-	}
+	
 
 	public String getName(){
 		return this.name;
@@ -212,10 +216,17 @@ class Player{
 		return this.position;
 	}
 
-	public void printInfo(Floor f){
+	public void printInfo(){
 		System.out.println("Player Position: "+this.currentPositon());
 		System.out.println(this.getName()+" has reached on "+f.getFloorType());
 		System.out.println("Total points: "+this.getTotalPoints());
+	}
+
+	public void changefloor(Floor fl){
+		this.f=fl;
+		this.position=fl.getPosition();
+	
+		this.points+=fl.givePoints();
 	}
 
 }
@@ -235,6 +246,10 @@ class Floor{
 
 	public String getFloorType(){
 		return this.type;
+	}
+
+	public int getPosition(){
+		return this.position;
 	}
 
 
