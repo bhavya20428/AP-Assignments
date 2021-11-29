@@ -3,19 +3,18 @@ import java.io.*;
 
 public class HopnWin {
 	public static void main(String[] args) {
-		Game play = new Game();
+		Game play = new Game();		
 		play.startGame();
-		
 	}
 }
 
 
 class Game{
 
-	Player P;
-	ArrayList <Tile> Carpet = new ArrayList();
-	GenericCalculator<Integer> int_calculator;
-	GenericCalculator<String> string_calculator;
+	private Player P;
+	private ArrayList <Tile> Carpet = new ArrayList();
+	private GenericCalculator<Integer> int_calculator;
+	private GenericCalculator<String> string_calculator;
 
 
 	Game(){
@@ -50,15 +49,41 @@ class Game{
 	}
 
 	public void startGame(){
+
+		
 		Scanner sc= new Scanner(System.in);
 		System.out.print("Hit Enter to initialize the game ");
-		String k=sc.nextLine();
-		System.out.println("Game is Ready");
 
-		// DO exception handling for input
+		while (true){
+			try{
+				System.out.printf("Hit Enter for your %s loop ",words[i]);
+				String k=sc.nextLine();
+
+				if(k.equals("")==false){
+					throw new WrongInputException("Please type Enter only!");	
+				}
+
+				else{
+					System.out.println("Game is Ready");
+					break;
+				}				
+
+			}
+
+		
+
+			catch( WrongInputException e){
+					System.out.println(e.getMessage());
+			}
+
+		}		
+
 		startLoop();
+
 		System.out.println("Game Over");
+
 		P.showBucket();
+			
 
 
 	}
@@ -66,28 +91,50 @@ class Game{
 	public void startLoop(){
 		Scanner sc = new Scanner(System.in);
 		String words[]={"first","second","third","fourth","fifth"};
+		
 		for(int i=0;i<5;i++){
-			System.out.printf("Hit Enter for your %s loop ",words[i]);
-			String k=sc.nextLine();
-			int landValue=((int)(Math.random() * 21)) ;
 
-			giveToy(landValue);
+			while (true){
+				try{
+
+					System.out.printf("Hit Enter for your %s loop ",words[i]);
+					String k=sc.nextLine();
+
+					if(k.equals("")==false){
+						throw new WrongInputException("Please type Enter only!");	
+					}
+
+					else{
+						break;
+					}				
+
+				}
+
 			
+
+				catch( WrongInputException e){
+					System.out.println(e.getMessage());
+				}
+
+			}
+			
+				
+			int landValue=((int)(Math.random() * 21)) ;
+			giveToy(landValue);		
 			
 		}
 	}
 
 	public void giveToy(int value){
-		if(value==20){
-				System.out.println("You are too energetic and zoomed past all the tiles. Muddy Puddle Splash!");
-			}
 
-		else{
-			System.out.printf("You landed on tile %d\n",value+1);
+		try{	
+			
+			Tile t=Carpet.get(value);
+			value++;
+			System.out.printf("You landed on tile %d\n",value);
 
 			if(value%2==0){
-				Toy q=Carpet.get(value).getCloneOfToy();
-				Toy mine =q;
+				Toy mine=t.getCloneOfToy();
 				P.addToy(mine);
 				System.out.printf("You won a %s\n",mine.getName());
 			}
@@ -96,19 +143,23 @@ class Game{
 				int k=askQuestion();
 				if(k==1){
 
-					Toy q=Carpet.get(value).getCloneOfToy();
-					Toy mine =q;
+					Toy mine=t.getCloneOfToy();
 					P.addToy(mine);
 					System.out.printf("You won a %s\n",mine.getName());
 				}
 
 				else{
+					System.out.println("Incorrect Answer");
 					System.out.println("You didn't win anything");
+				}				
 
-				}
-			}
+			}		
 
 
+		}
+
+		catch(IndexOutOfBoundsException e){
+			System.out.println("You are too energetic and zoomed past all the tiles. Muddy Puddle Splash!");
 		}
 
 
@@ -119,34 +170,65 @@ class Game{
 		Carpet.add(a);
 	}
 
+
+
 	public int askQuestion(){
-		System.out.println("Question answer round. Integer or Strings?");
-		Scanner sc= new Scanner(System.in);
-		String answer=sc.nextLine();
 
-		if(answer.equals("integer")){
-			Random r = new Random();
-			Integer i1 = r.nextInt(10000);
-			Integer i2 = r.nextInt(10000);
+			Scanner sc= new Scanner(System.in);
+			String answer;
+			
 
-			return int_calculator.calculate(i1,i2);
-		}
+			while(true){
 
-		else if(answer.equals("string")){
+				try{
+					System.out.println("Question answer round. Integer or String?");
+				    answer=sc.nextLine();
 
-			String s1= generateString();
-			String s2= generateString();
+				    if(!answer.toLowerCase().equals("integer") && !answer.toLowerCase().equals("string") ){
+				    	throw new WrongInputException("Please Enter either Integer or String");
+				    }
 
-			return string_calculator.calculate(s1,s2);
+				    else{
+				    	break;
+				    }
 
-		}
+				}
 
-		return 0;
+				catch( WrongInputException e){
+					System.out.println(e.getMessage());
+				}	
+
+			}
+			
+			
+
+			if(answer.toLowerCase().equals("integer")){
+				Random r = new Random();
+				Integer i1 = r.nextInt(10000);
+				Integer i2 = r.nextInt(10000);
+
+				return int_calculator.calculate(i1,i2);
+			}
+
+			else if(answer.toLowerCase().equals("string")){
+
+				String s1= generateString();
+				String s2= generateString();
+
+				return string_calculator.calculate(s1,s2);
+
+			}
+
+			else{
+				return 0;
+			}	
 
 	}
 
+
+
 	public String generateString(){
-		String characters="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+		String characters="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 		String togive= "";
 		for(int i=0;i<4;i++){
 			int pos=(int)(Math.random()* (characters.length()+1)); 
@@ -155,17 +237,14 @@ class Game{
 		
 		return togive;
 
-
-
-
 	}
 
 
 }
 
 class Tile{
-	Toy t;
-	int position;
+	private Toy t;
+	private int position;
 
 	Tile(String name, int position){
 		t = new Toy(name);
@@ -174,18 +253,15 @@ class Tile{
 	}
 
 	public Toy getCloneOfToy(){
-		return (Toy)t.clone();
+		return t.clone();
 	}
 }
 
 class GenericCalculator<T>{
 	
-	T option1;
-	T option2;
 
-	public int calculate(T a, T b){
-		this.option1 =a;
-		this.option2=b;
+	public int calculate(T option1, T option2){
+		
 		Scanner sc = new Scanner(System.in);
 
 		if(option1 instanceof String ){
@@ -200,7 +276,7 @@ class GenericCalculator<T>{
 			}
 		}
 
-		if(option1 instanceof Integer){
+		else if(option1 instanceof Integer){
 			System.out.printf("Calculate the result of  %d divided by %d (Integer Division)\n",option1,option2);
 			Integer answer= sc.nextInt();
 			sc.nextLine();
@@ -225,7 +301,7 @@ class GenericCalculator<T>{
 
 
 class Player{
-	ArrayList <Toy> Bucket=  new ArrayList();
+	private ArrayList <Toy> Bucket=  new ArrayList();
 
 	public void addToy(Toy t){
 		Bucket.add(t);
@@ -243,7 +319,7 @@ class Player{
 }
 
 class Toy implements Cloneable{
-	String name;
+	private String name;
 
 	Toy(String name){
 		this.name= name;
@@ -253,8 +329,18 @@ class Toy implements Cloneable{
 		return name;
 	}
 
+	@Override
 	public Toy clone(){
 		return new Toy(name);
 	}
 
 }
+
+class WrongInputException extends Exception{
+	public WrongInputException(String message){
+		super(message);
+	}
+}
+
+
+
