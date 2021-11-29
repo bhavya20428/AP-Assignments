@@ -52,11 +52,11 @@ class Game{
 
 		
 		Scanner sc= new Scanner(System.in);
-		System.out.print("Hit Enter to initialize the game ");
+		
 
 		while (true){
 			try{
-				System.out.printf("Hit Enter for your %s loop ",words[i]);
+				System.out.print("Hit Enter to initialize the game ");
 				String k=sc.nextLine();
 
 				if(k.equals("")==false){
@@ -162,6 +162,10 @@ class Game{
 			System.out.println("You are too energetic and zoomed past all the tiles. Muddy Puddle Splash!");
 		}
 
+		finally{
+
+		}
+
 
 	}
 
@@ -175,16 +179,16 @@ class Game{
 	public int askQuestion(){
 
 			Scanner sc= new Scanner(System.in);
-			String answer;
+			String ans;
 			
 
 			while(true){
 
 				try{
 					System.out.println("Question answer round. Integer or String?");
-				    answer=sc.nextLine();
+				    ans=sc.nextLine();
 
-				    if(!answer.toLowerCase().equals("integer") && !answer.toLowerCase().equals("string") ){
+				    if(!(ans.toLowerCase().equals("integer") || ans.toLowerCase().equals("string")) ){
 				    	throw new WrongInputException("Please Enter either Integer or String");
 				    }
 
@@ -202,20 +206,51 @@ class Game{
 			
 			
 
-			if(answer.toLowerCase().equals("integer")){
+			if(ans.toLowerCase().equals("integer")){
 				Random r = new Random();
 				Integer i1 = r.nextInt(10000);
 				Integer i2 = r.nextInt(10000);
 
-				return int_calculator.calculate(i1,i2);
+				System.out.printf("Calculate the result of  %d divided by %d (Integer Division)\n",i1,i2);
+				
+				try{
+					Integer answer= sc.nextInt();
+					sc.nextLine();
+					if(int_calculator.calculate(i1,i2,answer)){
+					return 1;
+					}
+
+					else{
+						return 0;
+					}
+				}
+
+				catch(InputMismatchException e){
+					return 0;				
+				}				
+
+
 			}
 
-			else if(answer.toLowerCase().equals("string")){
+			else if(ans.toLowerCase().equals("string")){
 
 				String s1= generateString();
 				String s2= generateString();
 
-				return string_calculator.calculate(s1,s2);
+
+				System.out.printf("Calculate the concatenation of strings %s and %s\n",s1,s2);
+				String answer= sc.nextLine();
+
+				if(string_calculator.calculate(s1,s2,answer)){
+					return 1;
+				}
+
+				else{
+					return 0 ;
+
+				}
+
+				
 
 			}
 
@@ -260,37 +295,23 @@ class Tile{
 class GenericCalculator<T>{
 	
 
-	public int calculate(T option1, T option2){
+	public boolean calculate(T option1, T option2, T answer){
 		
 		Scanner sc = new Scanner(System.in);
 
 		if(option1 instanceof String ){
-			System.out.printf("Calculate the concatenation of strings %s and %s\n",option1,option2);
-			String answer= sc.nextLine();
 
-			if(answer.equals((String)option1+(String)option2)){
-				return 1;
-			}
-			else{
-				return 0;
-			}
-		}
-
-		else if(option1 instanceof Integer){
-			System.out.printf("Calculate the result of  %d divided by %d (Integer Division)\n",option1,option2);
-			Integer answer= sc.nextInt();
-			sc.nextLine();
-
-			if(answer==((int)option1/(int)option2)){
-				return 1;
-			}
-			else{
-				return 0;
-			}
+			return ((String)answer).equals((String)option1+(String)option2);
 			
 		}
 
-		return 0;
+		else if(option1 instanceof Integer){
+
+			return (Integer)answer==((Integer)option1/(Integer)option2);			
+			
+		}
+
+		return false;
 
 	}
 
