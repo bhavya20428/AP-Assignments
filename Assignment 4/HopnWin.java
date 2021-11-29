@@ -352,9 +352,19 @@ class Toy implements Cloneable{
 
 	@Override
 	public Toy clone(){
-		return new Toy(name);
-	}
+		try{
+			Toy k= (Toy) super.clone();		
+			return k;		
 
+		}		
+
+		catch(CloneNotSupportedException e){
+			System.out.println("Clone can't be formed");
+			return null;
+		}
+		
+		
+	}
 }
 
 class WrongInputException extends Exception{
